@@ -1,0 +1,3 @@
+name = "downloader-api"
+main = "api.py"
+compatibility_date = "2026-05-11"
