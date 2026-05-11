@@ -1,4 +1,4 @@
 name = "downloader-api"
 main = "api.py"
 compatibility_date = "2026-05-11"
-compatibility_flags = ["python_workers"]
+compatibility_flags = ["python_workers", "disable_python_external_sdk"]
