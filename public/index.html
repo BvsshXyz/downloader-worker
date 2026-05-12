@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Downloader API</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;font-family:Arial,sans-serif;background:#0f172a;color:#e5e7eb;padding:20px}
+    .box{max-width:900px;margin:auto;background:#111827;border:1px solid #334155;border-radius:18px;padding:20px}
+    h1{margin-top:0}
+    p{color:#94a3b8}
+    .choose{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+    button{padding:14px;border:0;border-radius:12px;background:#22c55e;color:#052e16;font-weight:bold;cursor:pointer;font-size:16px}
+    .choice{padding:24px;background:#020617;color:#e5e7eb;border:1px solid #334155}
+    .choice:hover{border-color:#22c55e;background:#052e16}
+    .back{width:auto;background:#334155;color:#e5e7eb;margin-bottom:14px}
+    input,select{width:100%;padding:13px;border-radius:12px;border:1px solid #475569;background:#020617;color:white;font-size:15px;margin-top:8px}
+    label{display:block;margin-top:14px;color:#cbd5e1}
+    pre{margin-top:18px;padding:16px;min-height:360px;white-space:pre-wrap;word-break:break-word;overflow:auto;background:#020617;border:1px solid #334155;border-radius:14px;color:#d1fae5;font-size:13px}
+    .hidden{display:none}
+    @media(max-width:650px){.choose{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div id="select">
+      <h1>Downloader API</h1>
+      <p>Pilih platform dulu.</p>
+      <div class="choose">
+        <button class="choice" onclick="choose('tiktok')">TikTok</button>
+        <button class="choice" onclick="choose('youtube')">YouTube</button>
+      </div>
+      <pre>Silakan pilih TikTok atau YouTube...</pre>
+    </div>
+
+    <div id="form" class="hidden">
+      <button class="back" onclick="back()">← Ganti Platform</button>
+      <h1 id="title"></h1>
+      <p id="desc"></p>
+
+      <div id="qualityBox">
+        <label>Format / Quality YouTube</label>
+        <select id="quality">
+          <option value="">Semua format</option>
+          <option value="1080p">Video 1080p</option>
+          <option value="720p">Video 720p</option>
+          <option value="480p">Video 480p</option>
+          <option value="360p">Video 360p</option>
+          <option value="mp3">Audio MP3</option>
+          <option value="m4a">Audio M4A</option>
+        </select>
+      </div>
+
+      <label>URL</label>
+      <input id="url" placeholder="Masukkan URL">
+
+      <button id="btn" onclick="run()">Ambil Result</button>
+      <pre id="out">Result JSON akan muncul di sini...</pre>
+    </div>
+  </div>
+
+<script>
+let platform = "";
+
+function choose(p) {
+  platform = p;
+  document.getElementById("select").classList.add("hidden");
+  document.getElementById("form").classList.remove("hidden");
+
+  const title = document.getElementById("title");
+  const desc = document.getElementById("desc");
+  const qualityBox = document.getElementById("qualityBox");
+  const url = document.getElementById("url");
+  const out = document.getElementById("out");
+
+  out.textContent = "Result JSON akan muncul di sini...";
+
+  if (p === "youtube") {
+    title.textContent = "YouTube Downloader";
+    desc.textContent = "Masukkan link YouTube.";
+    qualityBox.style.display = "block";
+    url.placeholder = "https://youtu.be/VIDEO_ID";
+    url.value = "";
+  } else {
+    title.textContent = "TikTok Downloader";
+    desc.textContent = "Masukkan link TikTok.";
+    qualityBox.style.display = "none";
+    url.placeholder = "https://www.tiktok.com/@username/video/...";
+    url.value = "";
+  }
+}
+
+function back() {
+  platform = "";
+  document.getElementById("form").classList.add("hidden");
+  document.getElementById("select").classList.remove("hidden");
+}
+
+async function run() {
+  const url = document.getElementById("url").value.trim();
+  const quality = document.getElementById("quality").value.trim();
+  const out = document.getElementById("out");
+  const btn = document.getElementById("btn");
+
+  if (!url) {
+    out.textContent = JSON.stringify({status:"error",message:"Isi URL dulu."}, null, 2);
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Memproses...";
+  out.textContent = "Loading...";
+
+  try {
+    let endpoint = "";
+
+    if (platform === "youtube") {
+      endpoint = "/api/ytdown?url=" + encodeURIComponent(url);
+      if (quality) endpoint += "&quality=" + encodeURIComponent(quality);
+    } else {
+      endpoint = "/api/snaptik?url=" + encodeURIComponent(url);
+    }
+
+    const res = await fetch(endpoint);
+    const data = await res.json();
+    out.textContent = JSON.stringify(data, null, 2);
+  } catch (e) {
+    out.textContent = JSON.stringify({status:"error",message:String(e)}, null, 2);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Ambil Result";
+  }
+}
+</script>
+</body>
+</html>
